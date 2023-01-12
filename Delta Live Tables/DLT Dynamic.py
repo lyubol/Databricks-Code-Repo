@@ -3,7 +3,7 @@ from pyspark.sql.functions import *
 from pyspark.sql.types import *
 import json
 
-inputData = "Sales_January_2019"
+inputData = spark.conf.get("pipeline.entityName")
 dataPath = f"/mnt/adlslirkov/raw/{inputData}.csv"
 
 
@@ -18,27 +18,29 @@ print(f"Expectations: {expectconf}")
 
 # COMMAND ----------
 
+# Read
 df = (spark.read
       .format("csv")
-      .options(**options)
+      .options(**readoptions)
       .load(dataPath)
      )
+
+# Transform
+df = df.toDF(*[col.replace(" ", "") for col in df.columns])
+
+df = df.withColumn("OrderDate", to_timestamp("OrderDate", "MM/dd/yy HH:mm"))
 
 df.display()
 
 # COMMAND ----------
 
 import dlt
-from pyspark.sql.functions import *
-from pyspark.sql.types import *
-
-inputData = "January_2019"
-dataPath = f"/mnt/adlslirkov/raw/Sales_{inputData}.csv"
 
 @dlt.table(
-  comment="The raw wikipedia clickstream dataset, ingested from /databricks-datasets."
+    name=f"DLT{inputData}",
+    comment="The raw wikipedia clickstream dataset, ingested from /databricks-datasets."
 )
-@dlt.expect_all(expectations)
 
+@dlt.expect_all(expectconf)
 def clickstream_raw():
     return (df)
