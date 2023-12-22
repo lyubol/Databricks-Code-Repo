@@ -3,9 +3,9 @@ from pyspark.sql.functions import *
 from pyspark.sql.types import *
 import json
 
+# Set file name and path
 inputData = spark.conf.get("pipeline.entityName")
 dataPath = f"/mnt/adlslirkov/raw/{inputData}.csv"
-
 
 # COMMAND ----------
 
