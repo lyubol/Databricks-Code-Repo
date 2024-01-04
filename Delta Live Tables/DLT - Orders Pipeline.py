@@ -4,7 +4,7 @@ from pyspark.sql.functions import *
 
 # COMMAND ----------
 
-raw_path = "<path>"
+bronzePath = spark.conf.get("bronzePath")
 
 # COMMAND ----------
 
@@ -17,7 +17,7 @@ def orders_bronze():
         .option("cloudFiles.format", "csv")
         .option("cloudFiles.inferColumnTypes", True)
         .option("header", True)
-        .load(raw_path)
+        .load(bronzePath)
         .withColumn("OrderDate", regexp_replace(col("OrderDate"), "2019", "19"))
         .withColumn("OrderDate", to_timestamp("OrderDate", "MM/dd/yy HH:mm"))
         .select(
