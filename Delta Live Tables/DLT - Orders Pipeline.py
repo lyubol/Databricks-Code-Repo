@@ -34,8 +34,8 @@ def orders_bronze():
     comment = "Append valid orders only",
     table_properties = {"quality": "silver"}
 )
-@dlt.expect_or_fail("valid_order_quantity", col("QuantityOrdered") >= 1)
-@dlt.expect_or_fail("valid_price", col("PriceEach") >= 1)
+@dlt.expect_or_drop("valid_order_quantity", col("QuantityOrdered") >= 1)
+@dlt.expect_or_drop("valid_price", col("PriceEach") >= 1)
 def orders_silver():
     return (
         dlt.read_stream("orders_bronze")
