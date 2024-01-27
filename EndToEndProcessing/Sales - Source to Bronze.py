@@ -5,9 +5,13 @@ from pyspark.sql.types import *
 
 # COMMAND ----------
 
-bronzeSourcePath = spark.conf.get("bronzeSourcePath")
-bronzeTableDestinationPath = spark.conf.get("bronzeTableDestinationPath")
-bronzeCheckpointPath = spark.conf.get("bronzeCheckpointPath")
+# bronzeSourcePath = spark.conf.get("bronzeSourcePath")
+# bronzeTableDestinationPath = spark.conf.get("bronzeTableDestinationPath")
+# bronzeCheckpointPath = spark.conf.get("bronzeCheckpointPath")
+
+bronzeCheckpointPath = "/mnt/adlslirkov/raw/SalesEndToEnd/Bronze/"
+bronzeSourcePath = "/mnt/adlslirkov/raw/AutoLoaderInput/"
+bronzeDeltaTablePath = "/mnt/adlslirkov/raw/SalesEndToEnd/Bronze/"
 
 # COMMAND ----------
 
@@ -17,9 +21,11 @@ bronzeCheckpointPath = spark.conf.get("bronzeCheckpointPath")
 # COMMAND ----------
 
 # MAGIC %sql
+# MAGIC USE Sales; 
+# MAGIC
 # MAGIC CREATE TABLE IF NOT EXISTS Sales.SalesBronze
 # MAGIC   (OrderId INT, Product STRING, QuantityOrdered INT, PriceEach DOUBLE, OrderDate STRING, PurchaseAddress STRING, LoadDate TIMESTAMP, SourceFileName STRING) 
-# MAGIC LOCATION '/mnt/adlslirkov/raw/SalesEndToEnd/'
+# MAGIC LOCATION '/mnt/adlslirkov/raw/SalesEndToEnd/Bronze/';
 
 # COMMAND ----------
 
@@ -38,9 +44,8 @@ bronzeCheckpointPath = spark.conf.get("bronzeCheckpointPath")
 # DBTITLE 1,Append to Bronze
 bronzeReadConfig = {
     "cloudFiles.format": "csv",
-    "cloudFiles.inferColumnTypes": True,
     "cloudFiles.schemaEvolutionMode": "rescue",
-    "cloudFiles.schemaLocation": "/mnt/adlslirkov/raw/AutoLoaderOutput/Schema/"
+    "cloudFiles.schemaLocation": "/mnt/adlslirkov/raw/SalesEndToEnd/Bronze/"
 }
 
 bronzeWriteConfig = {
@@ -51,7 +56,7 @@ bronzeWriteConfig = {
 bronzeSourceSchema = StructType([
     StructField("OrderId", IntegerType()),
     StructField("Product", StringType()),
-    StructField("QuantityOrdered", StringType()),
+    StructField("QuantityOrdered", IntegerType()),
     StructField("PriceEach", DoubleType()),
     StructField("OrderDate", StringType()),
     StructField("PurchaseAddress", StringType()),
@@ -61,7 +66,7 @@ bronzeSourceSchema = StructType([
 
 (spark.readStream
  .format("cloudFiles")
- .options(**bronzeConfig)
+ .options(**bronzeReadConfig)
  .schema(bronzeSourceSchema)
  .load(bronzeSourcePath)
  .withColumn("LoadDate", current_timestamp())
@@ -74,5 +79,9 @@ bronzeSourceSchema = StructType([
 
 # COMMAND ----------
 
-# .withColumn("OrderDate", regexp_replace(col("OrderDate"), "2019", "19"))
-# .withColumn("OrderDate", to_timestamp("OrderDate", "MM/dd/yy HH:mm"))
+# %sql
+# SELECT * FROM Sales.SalesBronze
+
+# COMMAND ----------
+
+
