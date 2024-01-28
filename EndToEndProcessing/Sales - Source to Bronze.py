@@ -81,7 +81,3 @@ bronzeSourceSchema = StructType([
 
 # %sql
 # SELECT * FROM Sales.SalesBronze
-
-# COMMAND ----------
-
-
