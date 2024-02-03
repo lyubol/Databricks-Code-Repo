@@ -3,6 +3,7 @@
 import dlt
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
+import json
 
 # COMMAND ----------
 
@@ -15,10 +16,10 @@ rawFilePath = spark.conf.get("rawFilePath")
 # COMMAND ----------
 
 # DBTITLE 1,Obtain entity metadata
-entityConfig = spark.read.table("Metadata.EntityMetadata").where(col("EntityName") == entityName).collect()[0]
+entityConfig = spark.read.table("Metadata.EntityMetadata").where(col("EntityName") == entityName).first()
 configFormat = entityConfig.EntityFormat
-configOptions = entityConfig.EntityReadOptions
-configExpectations = entityConfig.EntityExpectations
+configOptions = json.loads(entityConfig.EntityReadOptions)
+configExpectations = json.loads(entityConfig.EntityExpectations)
 configDescription = entityConfig.EntityDescription
 
 print(f"""
@@ -35,7 +36,7 @@ print(f"""
 
 # DBTITLE 1,Read dataset
 dfRaw = (spark.read
-    .format()
+    .format(configFormat)
     .options(**configOptions)
     .load(rawFilePath)
 )
@@ -52,7 +53,7 @@ dfRaw = (dfRaw
 
 # DBTITLE 1,DLT logic
 @dlt.table(
-    comment = configComment,
+    comment = configDescription,
     name = entityName
 )
 @dlt.expect_all(configExpectations)
