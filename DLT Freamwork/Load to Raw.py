@@ -1,4 +1,5 @@
 # Databricks notebook source
+# DBTITLE 1,Imports
 import dlt
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
@@ -6,10 +7,10 @@ from pyspark.sql.types import *
 # COMMAND ----------
 
 # DBTITLE 1,Obtain parameters
-# entityName = spark.conf.get("entityName")
-# rawFilePath = spark.conf.get("rawFilePath")
+entityName = spark.conf.get("entityName")
+rawFilePath = spark.conf.get("rawFilePath")
 
-entityName = 'Account'
+# entityName = 'Sales'
 
 # COMMAND ----------
 
@@ -18,14 +19,16 @@ entityConfig = spark.read.table("Metadata.EntityMetadata").where(col("EntityName
 configFormat = entityConfig.EntityFormat
 configOptions = entityConfig.EntityReadOptions
 configExpectations = entityConfig.EntityExpectations
+configDescription = entityConfig.EntityDescription
 
 print(f"""
     Entity Metadata:
     ----------------
-    EntityName: {entityName}
-    EntityFormat: {configFormat}
-    EntityReadOptions: {configOptions}
-    EntityExpectations: {configExpectations}
+    EntityName: {entityName};
+    EntityFormat: {configFormat};
+    EntityReadOptions: {configOptions};
+    EntityExpectations: {configExpectations};
+    EntityDescription: {configDescription}.
 """)
 
 # COMMAND ----------
